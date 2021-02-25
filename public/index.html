@@ -1,0 +1,94 @@
+<html>
+<head>
+    <meta charSet="utf-8">
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<script src="lib/three.js"></script>
+<script src="lib/handtrack.min.js"></script>
+<script>
+
+    const video = document.createElement("video");
+    video.setAttribute("style", "display:none");
+    video.setAttribute("id", "invisible-video")
+    document.body.appendChild(video);
+
+    //////////////////////////////////////////////////////////////////////////////
+    //	设置video取图像的比例大小，区分宽屏窄屏
+    //////////////////////////////////////////////////////////////////////////////
+    let isWideDevice = window.innerWidth > window.innerHeight;
+    let ratio = isWideDevice ? 0.85 : 1;
+
+    let videoParameters = {
+        facingMode: 'environment'
+    }
+
+    if (isWideDevice) {
+        videoParameters.width = Math.floor(window.innerWidth * ratio);
+        videoParameters.height = Math.floor(window.innerHeight * ratio);
+    } else {
+        videoParameters.width = Math.floor(window.innerHeight * ratio);
+        videoParameters.height = Math.floor(window.innerWidth * ratio);
+    }
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const constraints = {
+            video: videoParameters
+        }
+        navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+            video.srcObject = stream;
+            video.play();
+        })
+            .catch(e => {
+                alert(`Webcam error: ${e}`);
+            });
+    } else {
+        alert('sorry - media devices API not supported');
+    }
+
+
+    let scene = new THREE.Scene();
+    scene.autoClear = false;
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    // let geom = new THREE.PlaneBufferGeometry();
+    let texture = new THREE.VideoTexture(video);
+    scene.background = texture;
+    // let material_1 = new THREE.MeshBasicMaterial( { map: texture } );
+    // const mesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), material_1);
+    // scene.add(mesh);
+
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    camera.position.z = 5;
+
+    const animate = function () {
+        requestAnimationFrame(animate);
+
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+
+        renderer.render(scene, camera);
+    };
+
+    animate();
+</script>
+
+<script>
+    const canvas = document.querySelector("canvas");
+    console.log(canvas)
+</script>
+</body>
+</html>
