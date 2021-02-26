@@ -58,7 +58,7 @@
             "-moz-transform:scaleX(-1);-webkit-transform:scaleX(-1);" +
             "-o-transform:scaleX(-1);transform:scaleX(-1);");
     }
-    video.setAttribute("style", `width:${uniWidth};height:${uniHeight}`)
+    // video.setAttribute("style", `width:${uniWidth};height:${uniHeight}`)
     video.width = uniWidth;
     video.height = uniHeight;
     //video.style.display = 'none'; // 是否展示video
@@ -69,12 +69,17 @@
         flipHorizontal: flipHorizontal,   // flip e.g for video
         maxNumBoxes: 20,        // maximum number of boxes to detect
         iouThreshold: 0.5,      // ioU threshold for non-max suppression
-        scoreThreshold: 0.6,    // confidence threshold for predictions.
+        scoreThreshold: 0.75,    // confidence threshold for predictions.
     } //模型参数
 
     handTrack.load(modelParams).then(lm => {
         model = lm
     }); // 模型加载
+
+
+    // const loader = new THREE.OBJLoader();
+    // const mtlLoader = new THREE.MTLLoader();
+
 
     // const video = document.createElement("video");
     // video.setAttribute("style", "display:none");
@@ -122,7 +127,8 @@
     //	建立 three.scene
     //////////////////////////////////////////////////////////////////////////////
     let scene = new THREE.Scene();
-    scene.autoClear = false;
+    // scene.background = new THREE.Color( 0xa0a0a0 );
+    // scene.autoClear = false;
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
     // let geom = new THREE.PlaneBufferGeometry();
@@ -134,11 +140,13 @@
     // const mesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), material_1);
     // scene.add(mesh);
 
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth/4, window.innerHeight/4);
+
+    const renderer = new THREE.WebGLRenderer({alpha: true});
+    // renderer.setClearAlpha(0)
+    renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry();
+    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
     const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
@@ -179,19 +187,72 @@
         });
     }
 
+    let v = 30
+
     function runDetection() {
         model.detect(video).then(predictions => {
-            console.log("Predictions: ", predictions);
-            // model.renderPredictions(predictions, canvas, context, video);
-            if (predictions.length>0){
-                cube.rotation.x += 0.05;
-                cube.rotation.y += 0.05;
+            // console.log("Predictions: ", predictions);
+            model.renderPredictions(predictions, canvas, context, video);
+            if (predictions.length > 0) {
+                cube.rotation.x += 0.1;
+                cube.rotation.y += 0.1;
+                // v = (v + 1) % 30;
+                // if (v === 10) {
+                //     cube.translateX(0.2);
+                //     cube.position.y += 0.2;
+                // }
+                // if (v===20){
+                //     cube.position.x -= 0.2;
+                //     cube.position.z += 0.2;
+                // }
+                // if (v===0){
+                //     cube.position.y -= 0.2;
+                //     cube.position.z -= 0.2;
+                // }
+
+                // let vec = new THREE.Vector3(cube.x,cube.y,cube.z)
+                // let vv = vec.project(camera);
+                // console.log(vv)
+
+                // cube.
+                for (let i = 0; i < predictions.length; i++) {
+                    let x = predictions[i]["bbox"][0] + predictions[i]["bbox"][2] / 2
+                    let y = predictions[i]["bbox"][1] + predictions[i]["bbox"][3] / 2
+                    console.log(x + " " + y)
+                    let f = new THREE.Vector3((x/uniWidth)*2-1, (y/uniHeight)*2-1, 0.5)
+                    let vec = f.unproject(camera)
+                    cube.position.x = vec.x
+                    cube.position.y = vec.y
+                }
 
                 renderer.render(scene, camera);
             }
             if (isVideo) {
                 requestAnimationFrame(runDetection);
             }
+        });
+    }
+
+    function loadBuild() {
+        mtlLoader.setPath("model/virus/");
+        mtlLoader.load('virus.mtl', (mtl) => {
+            mtl.preload();
+            loader.setMaterials(mtl);
+            loader.setPath("model/virus/");
+            // load a resource
+            loader.load(
+                // resource URL
+                'virus.obj',
+                function (object) {
+                    const renderingParent = new THREE.Group();
+                    renderingParent.scale.set(0.3, 0.3, 0.3);
+                    renderingParent.add(object);
+                    renderingParent.add(object);
+                    renderingParent.add(object);
+                    renderingParent.add(object);
+                    scene.add(renderingParent);
+                }
+            );
         });
     }
 </script>
