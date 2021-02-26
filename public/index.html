@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta charSet="utf-8">
-    <title>My first three.js app</title>
+    <title>WebAR-demo</title>
     <style>
         body {
             margin: 0;
@@ -9,23 +9,86 @@
     </style>
 </head>
 <body>
+<video id="ar-video"></video>
+<canvas id="ar-canvas" class="border canvasbox"></canvas>
+</body>
+<style type="text/css">
+    #ar-video {
+        z-index: -300;
+        position: absolute;
+    }
+
+    #ar-canvas {
+        z-index: -200;
+        position: absolute;
+    }
+</style>
 <script src="lib/three.js"></script>
 <script src="lib/handtrack.min.js"></script>
 <script>
+    // tools
 
-    const video = document.createElement("video");
-    video.setAttribute("style", "display:none");
-    video.setAttribute("id", "invisible-video")
-    document.body.appendChild(video);
+    // 检查设备类型
+    function checkIfMobile() {
+        // let isPC = navigator.platform.indexOf("Win") == 0 ||
+        //     navigator.platform.indexOf("Mac") == 0 ||
+        //     navigator.platform.indexOf("X11") == 0 ||
+        //     navigator.platform.indexOf("Linux") == 0;
+        // let isPad = navigator.userAgent.match(/iPad/i) != null;
+        //
+        // return !(isPC || isPad);
+        return !!navigator.userAgent.match(/AppleWebKit.*Mobile.*/)
+    }
+</script>
+<script>
+    let uniWidth = window.innerWidth;
+    let uniHeight = window.innerHeight;
+
+    const isWideDevice = window.innerWidth > window.innerHeight; // 是否是宽屏设备(width>height)
+    const useBackCamera = checkIfMobile(); // 是否使用后置摄像头
+    const flipHorizontal = !useBackCamera; // 前置摄像头时需水平翻转画面
+    const ratio = isWideDevice ? 0.85 : 1; // 暂时设置的比例
+
+
+    const video = document.querySelector("#ar-video")
+
+    // 若是前置摄像头，反转video画面
+    if (flipHorizontal) {
+        video.setAttribute("style",
+            "-moz-transform:scaleX(-1);-webkit-transform:scaleX(-1);" +
+            "-o-transform:scaleX(-1);transform:scaleX(-1);");
+    }
+    video.setAttribute("style", `width:${uniWidth};height:${uniHeight}`)
+    video.width = uniWidth;
+    video.height = uniHeight;
+    //video.style.display = 'none'; // 是否展示video
+
+    // 加载 handtrack.js 模型
+    let model = null;
+    const modelParams = {
+        flipHorizontal: flipHorizontal,   // flip e.g for video
+        maxNumBoxes: 20,        // maximum number of boxes to detect
+        iouThreshold: 0.5,      // ioU threshold for non-max suppression
+        scoreThreshold: 0.6,    // confidence threshold for predictions.
+    } //模型参数
+
+    handTrack.load(modelParams).then(lm => {
+        model = lm
+    }); // 模型加载
+
+    // const video = document.createElement("video");
+    // video.setAttribute("style", "display:none");
+    // video.setAttribute("id", "ar-video")
+    // document.body.appendChild(video);
+
 
     //////////////////////////////////////////////////////////////////////////////
     //	设置video取图像的比例大小，区分宽屏窄屏
     //////////////////////////////////////////////////////////////////////////////
-    let isWideDevice = window.innerWidth > window.innerHeight;
-    let ratio = isWideDevice ? 0.85 : 1;
+
 
     let videoParameters = {
-        facingMode: 'environment'
+        facingMode: useBackCamera ? {exact: "environment"} : "user"
     }
 
     if (isWideDevice) {
@@ -36,6 +99,9 @@
         videoParameters.height = Math.floor(window.innerWidth * ratio);
     }
 
+    //////////////////////////////////////////////////////////////////////////////
+    //	设置处理 video stream
+    //////////////////////////////////////////////////////////////////////////////
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const constraints = {
             video: videoParameters
@@ -52,19 +118,24 @@
     }
 
 
+    //////////////////////////////////////////////////////////////////////////////
+    //	建立 three.scene
+    //////////////////////////////////////////////////////////////////////////////
     let scene = new THREE.Scene();
     scene.autoClear = false;
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
     // let geom = new THREE.PlaneBufferGeometry();
-    let texture = new THREE.VideoTexture(video);
-    scene.background = texture;
+
+    // let texture = new THREE.VideoTexture(video);
+    // scene.background = texture;
+
     // let material_1 = new THREE.MeshBasicMaterial( { map: texture } );
     // const mesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), material_1);
     // scene.add(mesh);
 
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth/4, window.innerHeight/4);
     document.body.appendChild(renderer.domElement);
 
     const geometry = new THREE.BoxGeometry();
@@ -74,21 +145,55 @@
 
     camera.position.z = 5;
 
-    const animate = function () {
-        requestAnimationFrame(animate);
-
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-
-        renderer.render(scene, camera);
-    };
-
-    animate();
+    // const animate = function () {
+    //     requestAnimationFrame(animate);
+    //
+    //     cube.rotation.x += 0.01;
+    //     cube.rotation.y += 0.01;
+    //
+    //     renderer.render(scene, camera);
+    // };
+    //
+    // animate();
 </script>
 
 <script>
-    const canvas = document.querySelector("canvas");
-    console.log(canvas)
+
+
+    let isVideo = false;
+
+    let canvas = document.getElementById("ar-canvas")
+    let context = canvas.getContext("2d");
+
+
+    startVideo()
+
+
+    function startVideo() {
+        handTrack.startVideo(video, useBackCamera).then(function (status) {
+            console.log("video started", status);
+            if (status) {
+                isVideo = true
+                runDetection()
+            }
+        });
+    }
+
+    function runDetection() {
+        model.detect(video).then(predictions => {
+            console.log("Predictions: ", predictions);
+            // model.renderPredictions(predictions, canvas, context, video);
+            if (predictions.length>0){
+                cube.rotation.x += 0.05;
+                cube.rotation.y += 0.05;
+
+                renderer.render(scene, camera);
+            }
+            if (isVideo) {
+                requestAnimationFrame(runDetection);
+            }
+        });
+    }
 </script>
-</body>
+
 </html>
