@@ -1,0 +1,26 @@
+<html>
+<head>
+    <meta charSet="utf-8">
+    <title>WebAR-demo</title>
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<video id="ar-video"></video>
+<canvas id="ar-canvas" class="border canvasbox"></canvas>
+</body>
+<style type="text/css">
+    #ar-video {
+        z-index: -300;
+        position: absolute;
+    }
+
+    #ar-canvas {
+        z-index: -200;
+        position: absolute;
+    }
+</style>
+</html>
