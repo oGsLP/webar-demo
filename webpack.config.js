@@ -132,11 +132,11 @@ module.exports = {
                 ]
             },
             {
-                test: /\.stylus$/,
+                test: /\.less$/,
                 use: [
                     MiniCssExtractPlugin.loader,
                     'css-loader',
-                    'stylus-loader'
+                    'less-loader'
                 ]
             }
         ]

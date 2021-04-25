@@ -6,9 +6,10 @@
 // js scripts
 
 // stylesheet
-import './index.styl';
+import './index.less';
+
 import html2canvas from 'html2canvas';
-import './FileSaver';
+// import './FileSaver';
 
 // eslint-disable-next-line no-unused-vars
 function Save ()
