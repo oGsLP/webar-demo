@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.11.2",
+    "@tensorflow/tfjs": "0.13.5",
     "core-js": "^3.6.5",
-    "three": "^0.127.0",
+    "html2canvas": "^1.0.0-rc.7",
     "regenerator-runtime": "^0.13.7",
-    "@tensorflow/tfjs": "0.13.5"
+    "three": "^0.127.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",

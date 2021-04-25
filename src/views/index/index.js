@@ -6,4 +6,4 @@
 // js scripts
 
 // stylesheet
-import './index.styl'
+import './index.styl';
