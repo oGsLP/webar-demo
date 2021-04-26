@@ -9,4 +9,4 @@
 import '../../lib/main.js'
 
 // stylesheet
-import './index.styl'
+import './index.less'
