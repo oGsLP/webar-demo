@@ -8,9 +8,11 @@
 // stylesheet
 import './index.less';
 import html2canvas from 'html2canvas';
-import './FileSaver';
+import saveAs from "./FileSaver";
+
 
 alert('!!!');
+
 // let button = document.getElementsByClassName('div8');
 // button.addEventListener('click', function ()
 // {
