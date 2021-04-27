@@ -8,23 +8,23 @@
 // stylesheet
 import './index.less';
 import html2canvas from 'html2canvas';
-import saveAs from "./FileSaver";
+import saveAs from './FileSaver';
 
-
-alert('!!!');
-
-// let button = document.getElementsByClassName('div8');
+// let button = document.getElementsByClassName('div9');
+// // alert(button.length);
+//
 // button.addEventListener('click', function ()
 // {
-//     alert('hello');
-//     html2canvas(document.body).then(canvas => {
-//         // 将canvas内容保存为文件并下载
-//         console.log('save');
-//         canvas.toBlob(function (blob) {
-//             // eslint-disable-next-line no-undef
-//             saveAs(blob, 'hangge.png');
-//         });
-//     });
+//
+//     console.log('hello');
+//     // html2canvas(document.body).then(canvas => {
+//     //     // 将canvas内容保存为文件并下载
+//     //     console.log('save');
+//     //     canvas.toBlob(function (blob) {
+//     //         // eslint-disable-next-line no-undef
+//     //         saveAs(blob, 'hangge.png');
+//     //     });
+//     // });
 // });
 
 
