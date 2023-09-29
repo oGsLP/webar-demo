@@ -10,8 +10,8 @@ import './index.less';
 import html2canvas from 'html2canvas';
 import saveAs from './FileSaver';
 
-let button = document.getElementsByClassName('div9');
-alert(button.length);
+let button = document.querySelector("#lll")
+alert(button.toString());
 
 button.addEventListener('click', function ()
 {
